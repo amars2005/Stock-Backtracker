@@ -6,11 +6,14 @@ import java.util.*;
 public class TradingBacktest {
     public static void main(String[] args) throws IOException {
         List<PriceData> data = loadCSV("/test/AAPL.csv"); // note the leading '/'
-        MovingAverageStrategy strat = new MovingAverageStrategy(10, 50);
+        Strategy strat1 = new MovingAverageStrategy(10, 50);
+        Strategy strat2 = new RSIStrategy(14, 30, 70);
         Backtester backtester = new Backtester(10000);
 
-        double finalValue = backtester.run(data, strat);
-        System.out.println("Final portfolio value: $" + finalValue);
+        double finalValue1 = backtester.run(data, strat1);
+        double finalValue2 = backtester.run(data, strat2);
+        System.out.println("Final portfolio value with MovingAverage: $" + finalValue1);
+        System.out.println("Final portfolio value with RSI: $" + finalValue2);
     }
 
     static List<PriceData> loadCSV(String resourcePath) throws IOException {

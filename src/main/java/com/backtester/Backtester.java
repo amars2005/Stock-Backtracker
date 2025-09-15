@@ -11,7 +11,7 @@ public class Backtester {
         this.sharesHeld = 0;
     }
 
-    public double run(List<PriceData> data, MovingAverageStrategy strategy) {
+    public double run(List<PriceData> data, Strategy strategy) {
         List<Double> closes = new ArrayList<>();
         for (PriceData d : data) closes.add(d.close);
 
