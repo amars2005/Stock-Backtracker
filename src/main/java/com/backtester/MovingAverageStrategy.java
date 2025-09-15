@@ -2,7 +2,7 @@ package com.backtester;
 
 import java.util.*;
 
-public class MovingAverageStrategy {
+public class MovingAverageStrategy implements Strategy {
     private int shortWindow, longWindow;
 
     public MovingAverageStrategy(int shortWindow, int longWindow) {
@@ -10,6 +10,7 @@ public class MovingAverageStrategy {
         this.longWindow = longWindow;
     }
 
+    @Override
     public boolean shouldBuy(List<Double> closes, int day) {
         if (day < longWindow) return false;
         double shortMA = average(closes, day - shortWindow, day);
@@ -17,6 +18,7 @@ public class MovingAverageStrategy {
         return shortMA > longMA;
     }
 
+    @Override
     public boolean shouldSell(List<Double> closes, int day) {
         if (day < longWindow) return false;
         double shortMA = average(closes, day - shortWindow, day);
