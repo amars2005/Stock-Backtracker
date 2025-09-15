@@ -22,11 +22,11 @@ public class Backtester {
                 // buy 1 share
                 cash -= price;
                 sharesHeld++;
-                System.out.println("Buy on " + data.get(day).date + " at " + price);
+                System.out.println("Buy " + data.get(day).stockName + " on " + data.get(day).date + " at " + price);
             } else if (strategy.shouldSell(closes, day) && sharesHeld > 0) {
                 // sell all shares
                 cash += sharesHeld * price;
-                System.out.println("Sell on " + data.get(day).date + " at " + price);
+                System.out.println("Buy " + data.get(day).stockName + " on " + data.get(day).date + " at " + price);
                 sharesHeld = 0;
             }
         }
