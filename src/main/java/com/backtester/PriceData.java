@@ -1,11 +1,12 @@
 package com.backtester;
 
 public class PriceData {
-    String date, stockName;
+    String stockName;
+    Date date;
     double open, high, low, close;
     long volume;
 
-    public PriceData(String date, double open, double high, double low, double close, long volume, String stockName) {
+    public PriceData(Date date, double open, double high, double low, double close, long volume, String stockName) {
         this.date = date;
         this.open = open;
         this.high = high;
