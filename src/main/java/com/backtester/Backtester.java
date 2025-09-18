@@ -55,6 +55,12 @@ public class Backtester {
                 int relativeDayIndex = dayIndex - startDayIndexes.get(stock);
                 int sharesHeld = sharesHeldPerStock.get(stock);
                 stocksValue += data.get(relativeDayIndex).close * sharesHeld;
+            } else {
+                //sells all stock if the data is no longer present (i,e: the year for that stock has passed)
+                int relativeDayIndex = data.size() - 1;
+                int sharesHeld = sharesHeldPerStock.get(stock);
+                cash += sharesHeld * data.get(relativeDayIndex).close;
+                sharesHeldPerStock.put(stock, 0);
             }
 
         }

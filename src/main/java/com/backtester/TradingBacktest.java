@@ -28,7 +28,7 @@ public class TradingBacktest {
         double finalValue1 = 10000;
         double finalValue2 = 10000;
 
-        dates = dates.reversed();
+        dates = dates.stream().sorted().toList();
         int i = 0;
         Map<Integer, Date> indexedDates = new HashMap<>();
         for (Date date : dates) {
@@ -65,10 +65,10 @@ public class TradingBacktest {
                     }
                     list.add(new PriceData(
                             date,
-                            Double.parseDouble(parts[1]),
-                            Double.parseDouble(parts[2]),
-                            Double.parseDouble(parts[3]),
-                            Double.parseDouble(parts[4]),
+                            Double.parseDouble(parts[1].replace(",", "")),
+                            Double.parseDouble(parts[2].replace(",", "")),
+                            Double.parseDouble(parts[3].replace(",", "")),
+                            Double.parseDouble(parts[4].replace(",", "")),
                             Long.parseLong(parts[5].replace(",", "")),
                             filename.substring(24, filename.length()-4)
                     ));
