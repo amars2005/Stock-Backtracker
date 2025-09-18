@@ -1,38 +1,66 @@
 package com.backtester;
 
 import java.io.*;
+import java.nio.file.*;
 import java.util.*;
+import com.opencsv.CSVReader;
+import com.opencsv.exceptions.CsvValidationException;
 
 public class TradingBacktest {
-    public static void main(String[] args) throws IOException {
-        List<PriceData> data = loadCSV("/test/AAPL.csv"); // note the leading '/'
-        Strategy strat1 = new MovingAverageStrategy(10, 50);
-        Strategy strat2 = new RSIStrategy(14, 30, 70);
-        Backtester backtester = new Backtester(10000);
 
-        double finalValue1 = backtester.run(data, strat1);
-        double finalValue2 = backtester.run(data, strat2);
+    private static Map<String, List<PriceData>> stockData = new HashMap<>();
+    private static List<Date> dates = new ArrayList<>();
+
+    public static void main(String[] args) throws IOException {
+
+        Path folder = Paths.get("src/main/resources/test");
+        //List<PriceData> allData = new ArrayList<>();
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(folder, "*.csv")) {
+            for (Path file : stream) {
+                List<PriceData> data = loadCSV(file.toString());
+                String stockName = file.toString().substring(24, file.toString().length()-4);
+                stockData.put(file.toString(), data);
+            }
+        }
+
+        Strategy strat1 = new MovingAverageStrategy(10, 50);
+        double finalValue1 = 10000;
+        Backtester backtesterMA = new Backtester(finalValue1);
+
+        for (Date date : dates) {
+            for (List<PriceData> data: stockData.values()) {
+                finalValue1 = backtesterMA.step(data, strat1, date);
+            }
+        }
+
         System.out.println("Final portfolio value with MovingAverage: $" + finalValue1);
-        System.out.println("Final portfolio value with RSI: $" + finalValue2);
     }
 
-    static List<PriceData> loadCSV(String resourcePath) throws IOException {
+    static List<PriceData> loadCSV(String filename) throws IOException {
         List<PriceData> list = new ArrayList<>();
-
-        // Use the class loader to get an InputStream
-        try (InputStream is = TradingBacktest.class.getResourceAsStream(resourcePath);
-             BufferedReader br = new BufferedReader(new InputStreamReader(is))) {
-
-            br.readLine(); // skip header
-            String line;
-            while ((line = br.readLine()) != null) {
-                String[] parts = line.split(",");
-                list.add(new PriceData(parts[0],
-                        Double.parseDouble(parts[1].substring(1, parts[1].length()-1)),
-                        Double.parseDouble(parts[2].substring(1, parts[2].length()-1)),
-                        Double.parseDouble(parts[3].substring(1, parts[3].length()-1)),
-                        Double.parseDouble(parts[4].substring(1, parts[4].length()-1)),
-                        Long.parseLong(parts[5].substring(1, parts[5].length()-1))));
+        try (CSVReader reader = new CSVReader(new FileReader(filename))) {
+            reader.skip(1);
+            String[] parts;
+            while (true) {
+                try {
+                    parts = reader.readNext();
+                    if (parts == null) break;
+                    Date date = new Date(parts[0]);
+                    if (!dates.contains(date)) {
+                        dates.add(date);
+                    }
+                    list.add(new PriceData(
+                            date,
+                            Double.parseDouble(parts[1]),
+                            Double.parseDouble(parts[2]),
+                            Double.parseDouble(parts[3]),
+                            Double.parseDouble(parts[4]),
+                            Long.parseLong(parts[5].replace(",", "")),
+                            filename.substring(24, filename.length()-4)
+                    ));
+                } catch (CsvValidationException e) {
+                    e.printStackTrace();
+                }
             }
         }
 
