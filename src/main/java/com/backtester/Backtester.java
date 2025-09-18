@@ -4,13 +4,13 @@ import java.util.*;
 
 public class Backtester {
     private double cash;
-    private Map<String, Integer> sharesHeldPerStock = new HashMap<>();
-    private Map<String, List<PriceData>> stockData;
-    private Strategy strategy;
+    private final Map<String, Integer> sharesHeldPerStock = new HashMap<>();
+    private final Map<String, List<PriceData>> stockData;
+    private final Strategy strategy;
     public double value;
     private int dayIndex = 0;
-    private Map<String, Integer> startDayIndexes = new HashMap<>();
-    private Map<Integer, Date> indexedDates;
+    private final Map<String, Integer> startDayIndexes = new HashMap<>();
+    private final Map<Integer, Date> indexedDates;
 
     public Backtester(double initialCash, Map<String, List<PriceData>> stockData, Strategy strategy, Map<Integer, Date> indexedDates) {
         this.cash = initialCash;

@@ -8,7 +8,7 @@ import com.opencsv.exceptions.CsvValidationException;
 
 public class TradingBacktest {
 
-    private static Map<String, List<PriceData>> stockData = new HashMap<>();
+    private static final Map<String, List<PriceData>> stockData = new HashMap<>();
     private static List<Date> dates = new ArrayList<>();
 
     public static void main(String[] args) throws IOException {
@@ -39,10 +39,10 @@ public class TradingBacktest {
         Backtester backtesterMA = new Backtester(finalValue1, stockData, movingAverageStrategy, indexedDates);
         Backtester backtesterRSI = new Backtester(finalValue2, stockData, RSIStrategy, indexedDates);
 
-        for (Date date : dates) {
+        for (Date ignored : dates) {
             backtesterMA.step();
         }
-        for (Date date : dates) {
+        for (Date ignored : dates) {
             backtesterRSI.step();
         }
 

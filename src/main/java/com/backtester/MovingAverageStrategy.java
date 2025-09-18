@@ -3,7 +3,8 @@ package com.backtester;
 import java.util.*;
 
 public class MovingAverageStrategy implements Strategy {
-    private int shortWindow, longWindow;
+    private final int shortWindow;
+    private final int longWindow;
 
     public MovingAverageStrategy(int shortWindow, int longWindow) {
         this.shortWindow = shortWindow;

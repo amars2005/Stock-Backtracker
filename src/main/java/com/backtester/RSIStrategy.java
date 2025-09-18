@@ -3,9 +3,9 @@ package com.backtester;
 import java.util.*;
 
 public class RSIStrategy implements Strategy{
-    private int period;
-    private double oversoldThreshold;
-    private double overboughtThreshold;
+    private final int period;
+    private final double oversoldThreshold;
+    private final double overboughtThreshold;
 
     /**
      * @param period Number of days to calculate RSI (commonly 14)
