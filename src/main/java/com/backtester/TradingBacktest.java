@@ -14,7 +14,6 @@ public class TradingBacktest {
     public static void main(String[] args) throws IOException {
 
         Path folder = Paths.get("src/main/resources/test");
-        //List<PriceData> allData = new ArrayList<>();
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(folder, "*.csv")) {
             for (Path file : stream) {
                 List<PriceData> data = loadCSV(file.toString());
@@ -23,8 +22,11 @@ public class TradingBacktest {
             }
         }
 
-        Strategy strat1 = new MovingAverageStrategy(10, 50);
+        Strategy movingAverageStrategy = new MovingAverageStrategy(10, 50);
+        Strategy RSIStrategy = new RSIStrategy(14, 30, 70);
+
         double finalValue1 = 10000;
+        double finalValue2 = 10000;
 
         dates = dates.reversed();
         int i = 0;
@@ -34,13 +36,18 @@ public class TradingBacktest {
             i++;
         }
 
-        Backtester backtesterMA = new Backtester(finalValue1, stockData, strat1, indexedDates);
+        Backtester backtesterMA = new Backtester(finalValue1, stockData, movingAverageStrategy, indexedDates);
+        Backtester backtesterRSI = new Backtester(finalValue2, stockData, RSIStrategy, indexedDates);
 
         for (Date date : dates) {
             backtesterMA.step();
         }
+        for (Date date : dates) {
+            backtesterRSI.step();
+        }
 
         System.out.println("Final portfolio value with MovingAverage: $" + backtesterMA.value);
+        System.out.println("Final portfolio value with RSI: $" + backtesterRSI.value);
     }
 
     static List<PriceData> loadCSV(String filename) throws IOException {
