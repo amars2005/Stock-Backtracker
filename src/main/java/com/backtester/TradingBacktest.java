@@ -19,21 +19,28 @@ public class TradingBacktest {
             for (Path file : stream) {
                 List<PriceData> data = loadCSV(file.toString());
                 String stockName = file.toString().substring(24, file.toString().length()-4);
-                stockData.put(file.toString(), data);
+                stockData.put(stockName, data);
             }
         }
 
         Strategy strat1 = new MovingAverageStrategy(10, 50);
         double finalValue1 = 10000;
-        Backtester backtesterMA = new Backtester(finalValue1);
 
+        dates = dates.reversed();
+        int i = 0;
+        Map<Integer, Date> indexedDates = new HashMap<>();
         for (Date date : dates) {
-            for (List<PriceData> data: stockData.values()) {
-                finalValue1 = backtesterMA.step(data, strat1, date);
-            }
+            indexedDates.put(i, date);
+            i++;
         }
 
-        System.out.println("Final portfolio value with MovingAverage: $" + finalValue1);
+        Backtester backtesterMA = new Backtester(finalValue1, stockData, strat1, indexedDates);
+
+        for (Date date : dates) {
+            backtesterMA.step();
+        }
+
+        System.out.println("Final portfolio value with MovingAverage: $" + backtesterMA.value);
     }
 
     static List<PriceData> loadCSV(String filename) throws IOException {
