@@ -4,33 +4,62 @@ import java.util.*;
 
 public class Backtester {
     private double cash;
-    private int sharesHeld;
+    private Map<String, Integer> sharesHeldPerStock = new HashMap<>();
+    private Map<String, List<PriceData>> stockData;
+    private Strategy strategy;
+    public double value;
+    private int dayIndex = 0;
+    private Map<String, Integer> startDayIndexes = new HashMap<>();
+    private Map<Integer, Date> indexedDates;
 
-    public Backtester(double initialCash) {
+    public Backtester(double initialCash, Map<String, List<PriceData>> stockData, Strategy strategy, Map<Integer, Date> indexedDates) {
         this.cash = initialCash;
-        this.sharesHeld = 0;
+        this.stockData = stockData;
+        this.value = cash;
+        this.strategy = strategy;
+        this.indexedDates = indexedDates;
     }
 
-    public double run(List<PriceData> data, Strategy strategy) {
-        List<Double> closes = new ArrayList<>();
-        for (PriceData d : data) closes.add(d.close);
+    public void step() {
+        Date date = indexedDates.get(dayIndex);
+        for (String stock : stockData.keySet()) {
+            List<PriceData> data = stockData.get(stock);
+            List<Double> closes = new ArrayList<>();
+            for (PriceData d : data) closes.add(d.close);
 
-        for (int day = 0; day < data.size(); day++) {
-            double price = data.get(day).close;
+            if (data.stream().anyMatch(a -> a.date.equals(date))) {
+                startDayIndexes.putIfAbsent(stock, dayIndex);
+                int relativeDayIndex = dayIndex - startDayIndexes.get(stock);
 
-            if (strategy.shouldBuy(closes, day) && cash >= price) {
-                // buy 1 share
-                cash -= price;
-                sharesHeld++;
-                System.out.println("Buy " + data.get(day).stockName + " on " + data.get(day).date + " at " + price);
-            } else if (strategy.shouldSell(closes, day) && sharesHeld > 0) {
-                // sell all shares
-                cash += sharesHeld * price;
-                System.out.println("Buy " + data.get(day).stockName + " on " + data.get(day).date + " at " + price);
-                sharesHeld = 0;
+                double price = data.get(relativeDayIndex).close;
+                int sharesHeld = sharesHeldPerStock.getOrDefault(stock, 0);
+                if (strategy.shouldBuy(closes, relativeDayIndex) && cash >= price) {
+                    // buy 1 share
+                    cash -= price;
+                    sharesHeld++;
+                } else if (strategy.shouldSell(closes, relativeDayIndex) && sharesHeld > 0) {
+                    // sell all shares
+                    cash += sharesHeld * price;
+                    sharesHeld = 0;
+                }
+                sharesHeldPerStock.put(stock, sharesHeld);
             }
         }
+
         // Final portfolio value
-        return cash + sharesHeld * data.get(data.size() - 1).close;
+        double stocksValue = 0;
+        for (String stock : sharesHeldPerStock.keySet()) {
+
+            List<PriceData> data = stockData.get(stock);
+            if (data.stream().anyMatch(a -> a.date.equals(date))) {
+                int relativeDayIndex = dayIndex - startDayIndexes.get(stock);
+                int sharesHeld = sharesHeldPerStock.get(stock);
+                stocksValue += data.get(relativeDayIndex).close * sharesHeld;
+            }
+
+        }
+        dayIndex++;
+        value = cash + stocksValue;
+        System.out.println("Day " + dayIndex + " portfolio value = " + value);
     }
 }
