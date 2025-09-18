@@ -7,33 +7,33 @@ import com.opencsv.CSVReader;
 import com.opencsv.exceptions.CsvValidationException;
 
 public class TradingBacktest {
+
+    private static Map<String, List<PriceData>> stockData = new HashMap<>();
+    private static List<Date> dates = new ArrayList<>();
+
     public static void main(String[] args) throws IOException {
 
         Path folder = Paths.get("src/main/resources/test");
-        List<List<PriceData>> allData = new ArrayList<>();
+        //List<PriceData> allData = new ArrayList<>();
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(folder, "*.csv")) {
             for (Path file : stream) {
                 List<PriceData> data = loadCSV(file.toString());
-                System.out.println(file.toString());
-                allData.add(data);
+                String stockName = file.toString().substring(24, file.toString().length()-4);
+                stockData.put(file.toString(), data);
             }
         }
 
         Strategy strat1 = new MovingAverageStrategy(10, 50);
-        Strategy strat2 = new RSIStrategy(14, 30, 70);
         double finalValue1 = 10000;
-        double finalValue2 = 10000;
         Backtester backtesterMA = new Backtester(finalValue1);
-        Backtester backtesterRSI = new Backtester(finalValue2);
 
-        for (List<PriceData> data: allData) {
-            finalValue1 = backtesterMA.run(data, strat1);
+        for (Date date : dates) {
+            for (List<PriceData> data: stockData.values()) {
+                finalValue1 = backtesterMA.step(data, strat1, date);
+            }
         }
-        for (List<PriceData> data: allData) {
-            finalValue2 = backtesterRSI.run(data, strat2);
-        }
+
         System.out.println("Final portfolio value with MovingAverage: $" + finalValue1);
-        System.out.println("Final portfolio value with RSI: $" + finalValue2);
     }
 
     static List<PriceData> loadCSV(String filename) throws IOException {
@@ -45,8 +45,12 @@ public class TradingBacktest {
                 try {
                     parts = reader.readNext();
                     if (parts == null) break;
+                    Date date = new Date(parts[0]);
+                    if (!dates.contains(date)) {
+                        dates.add(date);
+                    }
                     list.add(new PriceData(
-                            parts[0],
+                            date,
                             Double.parseDouble(parts[1]),
                             Double.parseDouble(parts[2]),
                             Double.parseDouble(parts[3]),
